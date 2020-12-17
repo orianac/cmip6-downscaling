@@ -5,6 +5,9 @@ import zarr
 
 from cmip6_downscaling.workflows.utils import get_store
 
+KELVIN_TO_CELCIUS = -273.15
+SECS_PER_DAY = 86400
+
 
 def load_cmip(model, scenario, member, bias_corrected=False):
 
@@ -27,6 +30,12 @@ def load_cmip(model, scenario, member, bias_corrected=False):
                 'rsds': 'srad',
             }
         )
+        # Convert variables to align with units of terraclimate
+        ds['tmax'] += KELVIN_TO_CELCIUS
+        ds['tmin'] += KELVIN_TO_CELCIUS
+        ds['rh'] /= 100.0
+        ds['ppt'] *= SECS_PER_DAY
+
     return ds
 
 

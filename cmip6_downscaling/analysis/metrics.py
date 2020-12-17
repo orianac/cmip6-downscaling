@@ -37,6 +37,14 @@ def moransI(obj, weights=None):
 #         obj_quantile = obj_coarse.quantile(q=q).mean(('x', 'y'))
 
 
+def select_valid_variables(terraclimate=True):
+    if terraclimate:
+        variables = ['ppt', 'rh', 'tmax', 'tmin', 'srad', 'pdsi', 'vap', 'pet']
+    else:
+        variables = ['ppt', 'rh', 'tmax', 'tmin', 'srad']
+    return variables
+
+
 def calc(obj, compute=False):
     """
     This function takes an object and then calculates a
@@ -56,3 +64,37 @@ def calc(obj, compute=False):
         metrics = dask.compute(metrics)[0]
 
     return metrics
+
+
+def create_mask(lat_lon_bounds_dict, ds):
+    """
+    This will create a mask that aligns with your ds of interest. Requires ds to have coordinates of
+    lat and lon.
+    """
+    lat_bounds, lon_bounds = (
+        lat_lon_bounds_dict["lat"],
+        lat_lon_bounds_dict["lon"],
+    )
+    ds = (
+        ds.where(ds.lat > lat_bounds[0])
+        .where(ds.lat < lat_bounds[1])
+        .where(ds.lon > lon_bounds[0])
+        .where(ds.lon < lon_bounds[1])
+    )
+    # hacky- grab a sample variable
+    sample_var = list(ds.data_vars)[0]
+    mask = (
+        (
+            ds[sample_var]
+            .where(ds.lat > lat_bounds[0])
+            .where(ds.lat < lat_bounds[1])
+            .where(ds.lon > lon_bounds[0])
+            .where(ds.lon < lon_bounds[1])
+            .isel(time=0)
+            > 0
+        )
+        .drop(["member_id", "month", "lat", "lon", "time", "height"])
+        .squeeze()
+    )
+
+    return mask

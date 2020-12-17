@@ -30,7 +30,6 @@ def plot_time_mean(
     cmap_diff = 'RdBu'
     cmap_abs = 'viridis'
     for i, var in enumerate(vars_to_plot):
-        print(var)
         if var in list(limits_dict.keys()):
             ### TODO: clean this up
             (vmin, vmax) = limits_dict[var]['abs']
@@ -56,20 +55,20 @@ def plot_time_mean(
     return fig, axarr
 
 
-def plot_seasonal_mean(ds1, ds2, limits_dict=None):
+def plot_seasonal_mean(ds_list, limits_dict=None):
 
-    vars_to_plot = list(ds1.data_vars.keys())
+    vars_to_plot = list(ds_list[0].data_vars.keys())
 
     fig, axarr = plt.subplots(nrows=len(vars_to_plot))
-
-    for i, var in enumerate(vars_to_plot):
-        if var in list(limits_dict.keys()):
-            vmin = limits_dict[var]['vmin']
-            vmax = limits_dict[var]['vmax']
-        else:
-            vmin, vmax = None, None
-        ds2[var].plot(ax=axarr[i])
-        ds2[var].plot(ax=axarr[i])
-        axarr[i].ylim(vmin, vmax)
+    for ds in ds_list:
+        for i, var in enumerate(vars_to_plot):
+            if var in list(limits_dict.keys()):
+                vmin = limits_dict[var]['vmin']
+                vmax = limits_dict[var]['vmax']
+            else:
+                vmin, vmax = None, None
+            ds[var].plot(ax=axarr[i])
+            ds[var].plot(ax=axarr[i])
+            axarr[i].ylim(vmin, vmax)
 
     return fig, axarr
