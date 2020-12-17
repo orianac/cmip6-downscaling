@@ -8,7 +8,30 @@ def time_weighted_mean(ds, *args, **kwargs):
     return ds.weighted(weights).mean(dim='time')
 
 
+def time_weighted_interannual_variability(ds, *args, **kwargs):
+    """
+    Given dataset returns one map of the standard deviation for
+    annual values of the variables.
+    """
+    #    weights = ds.time.dt.days_in_month
+    # couldn't figure out the weighting here so i'm skipping for now
+    # MUST FIX - why can't you weight then groupby??
+    return ds.groupby('time.year').sum().std(dim='year')
+
+
+def time_weighted_seasonal_variability(ds, *args, **kwargs):
+    """
+    Given input dataset, returns 12 maps of the standard deviation for
+    each variable.
+    """
+    #   weights = ds.time.dt.days_in_month
+    # couldn't figure out the weighting here so i'm skipping for now
+    # MUST FIX - why can't you weight then groupby??
+    return ds.groupby('time.month').std()
+
+
 def seasonal_cycle_mean(obj):
+
     return obj.mean(('x', 'y'))
 
 
@@ -45,7 +68,7 @@ def select_valid_variables(terraclimate=True):
     return variables
 
 
-def calc(obj, compute=False):
+def calc(obj, compute=False, regions=None):
     """
     This function takes an object and then calculates a
     series of metrics for that object. It returns it
@@ -58,8 +81,12 @@ def calc(obj, compute=False):
 
     metrics['time_mean'] = time_weighted_mean(obj)
     metrics['seasonal_cycle_mean'] = seasonal_cycle_mean(obj)
-    # metrics['seasonal_cycle_std'] =
+    metrics['interannual_variability'] = time_weighted_interannual_variability(obj)
+    metrics['seasonal_variability'] = time_weighted_seasonal_variability(obj)
 
+    # metrics['seasonal_cycle_std'] =
+    if regions:
+        print('then well do the seasonal stuff  on the region boxes too')
     if compute:
         metrics = dask.compute(metrics)[0]
 

@@ -62,11 +62,13 @@ def plot_seasonal_mean(ds_list, limits_dict=None):
     fig, axarr = plt.subplots(nrows=len(vars_to_plot))
     for ds in ds_list:
         for i, var in enumerate(vars_to_plot):
+
             if var in list(limits_dict.keys()):
                 vmin = limits_dict[var]['vmin']
                 vmax = limits_dict[var]['vmax']
             else:
                 vmin, vmax = None, None
+
             ds[var].plot(ax=axarr[i])
             ds[var].plot(ax=axarr[i])
             axarr[i].ylim(vmin, vmax)
