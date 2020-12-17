@@ -1,15 +1,11 @@
+import dask
 import numpy as np
 from esda.moran import Moran
 
 
-def weighted_mean(ds, *args, **kwargs):
+def time_weighted_mean(ds, *args, **kwargs):
     weights = ds.time.dt.days_in_month
     return ds.weighted(weights).mean(dim='time')
-
-
-def time_mean(obj):
-    obj = obj.resample(time='AS').map(weighted_mean, dim='time')
-    return obj.mean('time')
 
 
 def seasonal_cycle_mean(obj):
@@ -51,11 +47,12 @@ def calc(obj, compute=False):
     """
 
     metrics = {}
+
+    metrics['time_mean'] = time_weighted_mean(obj)
+    metrics['seasonal_cycle_mean'] = seasonal_cycle_mean(obj)
+    # metrics['seasonal_cycle_std'] =
+
     if compute:
-        metrics['time_mean'] = time_mean(obj).load()
-        metrics['seasonal_cycle_mean'] = seasonal_cycle_mean(obj).load()
-    else:
-        metrics['time_mean'] = time_mean(obj)
-        metrics['seasonal_cycle_mean'] = seasonal_cycle_mean(obj)
+        metrics = dask.compute(metrics)[0]
 
     return metrics

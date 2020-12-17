@@ -15,6 +15,18 @@ def load_cmip(model, scenario, member, bias_corrected=False):
 
     store = get_store(prefix)
     ds = xr.open_zarr(store, consolidated=True)
+
+    if not bias_corrected:
+        ds = ds.rename(
+            {
+                'pr': 'ppt',
+                'hurs': 'rh',
+                'rsds': 'srad',
+                'tasmax': 'tmax',
+                'tasmin': 'tmin',
+                'rsds': 'srad',
+            }
+        )
     return ds
 
 
@@ -26,5 +38,7 @@ def load_obs():
         account_key=os.environ["BLOB_ACCOUNT_KEY"],
     )
     ds = xr.open_zarr(mapper, consolidated=True)
+    ds.x.attrs['units'] = 'm'
+    ds.y.attrs['units'] = 'm'
 
     return ds
